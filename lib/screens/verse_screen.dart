@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -151,6 +152,9 @@ class _VerseScreenState extends State<VerseScreen> {
       return [const SizedBox(height: 0)];
     }
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = math.min(24.0, screenWidth * 0.05);
+
     final widgets = <Widget>[];
     for (final key in translationOrder) {
       if (!selectedTranslations.contains(key)) continue;
@@ -161,7 +165,10 @@ class _VerseScreenState extends State<VerseScreen> {
         const SizedBox(height: 10),
         const Divider(thickness: 1),
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: EdgeInsets.symmetric(
+            vertical: 20,
+            horizontal: horizontalPadding,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -209,62 +216,77 @@ class _VerseScreenState extends State<VerseScreen> {
     if (item is VersePage) {
       final verse = item.verse;
       final screenHeight = MediaQuery.of(context).size.height;
+      final screenWidth = MediaQuery.of(context).size.width;
+      final horizontalPadding = math.min(24.0, screenWidth * 0.05);
+
       return SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 40),
         child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: screenHeight - kToolbarHeight - 180,
-              maxWidth: 400,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Text(
-                    verse.text,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontFamily: serifFont,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: screenHeight - kToolbarHeight - 180,
+                maxWidth: 400,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Text(
+                      verse.text,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontFamily: serifFont,
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-                ..._buildTranslations(verse.id),
-              ],
+                  ..._buildTranslations(verse.id),
+                ],
+              ),
             ),
           ),
         ),
       );
     } else if (item is ChapterDivider) {
       final chapter = item.chapter;
+      final screenWidth = MediaQuery.of(context).size.width;
+      final horizontalPadding = math.min(24.0, screenWidth * 0.05);
+
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Chapter ${chapter.id}', style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            Text(
-              chapter.pali,
-              style: TextStyle(
-                fontSize: 32,
-                fontFamily: serifFont,
-                fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.w500,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Chapter ${chapter.id}',
+                style: const TextStyle(fontSize: 18),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              chapter.english,
-              style: const TextStyle(fontSize: 22),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                chapter.pali,
+                style: TextStyle(
+                  fontSize: 32,
+                  fontFamily: serifFont,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                chapter.english,
+                style: const TextStyle(fontSize: 22),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       );
     }

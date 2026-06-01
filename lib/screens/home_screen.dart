@@ -89,6 +89,12 @@ class _HomeScreenState extends State<HomeScreen>
     final chapterIds = chapterMap.keys.toList()..sort();
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
+    _floatingController.repeat(reverse: true);
+    Future.delayed(_floatingController.duration! * 4, () {
+      _floatingController.stop();
+      _floatingController.reset();
+      setState(() {});
+    });
 
     final leftContent = SingleChildScrollView(
       child: Column(
@@ -96,15 +102,7 @@ class _HomeScreenState extends State<HomeScreen>
         children: [
           const SizedBox(height: 30),
           GestureDetector(
-            onTap: () {
-              _floatingController.repeat(reverse: true);
-              Future.delayed(_floatingController.duration! * 4, () {
-                _floatingController.stop();
-                _floatingController.reset();
-                setState(() {});
-              });
-            },
-            onDoubleTap: () async {
+            onTap: () async {
               final random = (verses.toList()..shuffle()).first;
               await Navigator.push(
                 context,
@@ -462,41 +460,54 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       bottomNavigationBar: BottomAppBar(
         color: Theme.of(context).colorScheme.surface,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(4, (index) {
-            final isSelected = _selectedIndex == index;
-            return GestureDetector(
-              onTap: () {
-                setState(() => _selectedIndex = index);
-                _pageController.animateToPage(
-                  index,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              children: List.generate(4, (index) {
+                final isSelected = _selectedIndex == index;
+                return Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      setState(() => _selectedIndex = index);
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    child: Center(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.primary.withAlpha(38)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          icons[index],
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.outline,
+                          size: 26,
+                        ),
+                      ),
+                    ),
+                  ),
                 );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.primary.withAlpha(38)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    icons[index],
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.outline,
-                    size: 28,
-                  ),
-                ),
-              ),
-            );
-          }),
+              }),
+            ),
+          ),
         ),
       ),
     );
