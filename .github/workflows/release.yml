@@ -1,0 +1,56 @@
+name: Release APKs
+
+on:
+    push:
+        tags:
+            - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+    build-and-release:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: "temurin"
+                  java-version: "17"
+
+            - name: Set up Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  flutter-version: "3.32.1"
+                  channel: "stable"
+                  cache: true
+
+            - name: Get dependencies
+              run: flutter pub get
+
+            - name: Build split APKs
+              run: flutter build apk --release --split-per-abi
+
+            - name: Get tag message as changelog
+              id: changelog
+              run: |
+                  TAG_NAME="${GITHUB_REF#refs/tags/}"
+                  {
+                    echo "changelog<<EOF"
+                    git log -1 --format=%B "$TAG_NAME"
+                    echo "EOF"
+                  } >> "$GITHUB_OUTPUT"
+
+            - name: Create Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  name: ${{ github.ref_name }}
+                  body: ${{ steps.changelog.outputs.changelog }}
+                  files: |
+                      build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+                      build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+                      build/app/outputs/flutter-apk/app-x86_64-release.apk
