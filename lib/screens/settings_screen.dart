@@ -8,7 +8,7 @@ import '../providers/translations_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-  static const appVersion = '1.2.3';
+  static const appVersion = '1.2.4';
 
   @override
   Widget build(BuildContext context) {
